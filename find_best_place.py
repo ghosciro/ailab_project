@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from multiprocessing import Process
+from multiprocessing import Process,Value,Array
 Y=300
 video_source="video1.mp4"
 
