@@ -72,7 +72,7 @@ for i in range(1,len(video_l)):
         beta = 1.0 - alpha#1/2,2/3,3/4
         dst = cv2.addWeighted(video_l[i], alpha, dst, beta, 0.0)#somma pesata 
 
-dst=make_things_better(dst)
+#dst=make_things_better(dst)
 
 cv2.imshow("",dst)
 cv2.imwrite(video_name+".jpg",dst)
