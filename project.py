@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-#DEBUG=True 
+DEBUG=True 
 #DEBUG=False 
 
 
