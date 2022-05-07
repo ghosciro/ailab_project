@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 #DEBUG=True 
-DEBUG=False 
+#DEBUG=False 
 
 
 ##filtri per immagine binario
@@ -19,7 +19,7 @@ def read(video):
     success,frame=video.read()
     #frame=make_things_better(frame)
     return success,frame
-video_name="video1.mp4"
+video_name="video2.mp4"
 
 video=cv2.VideoCapture(video_name) #aprire video
 
@@ -65,6 +65,7 @@ while succ and len(video_l)<MAX_FRAME:
 #trasformo lista in np.array
 video_l=np.array(video_l)
 
+#rimuovo la mano
 dst = video_l[0]
 for i in range(1,len(video_l)):
         alpha = 1.0/(i)#1/2,1/3,1/4

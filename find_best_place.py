@@ -1,16 +1,15 @@
 import cv2
-from cv2 import meanShift
-from cv2 import imshow
 import numpy as np
 
-Y=425
-video_source="video.mp4"
+Y=300
+video_source="video1.mp4"
+
 def make_things_better(image):
-    image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-    image=cv2.GaussianBlur(image,(11,11),0)
-    image =cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,3,0.5)
-    image = cv2.GaussianBlur(image,(3,3),0)
-    ret, image = cv2.threshold(image, 150, 255, 0)
+    image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) #nohist,55,3,1,nogaussian2,nothreshold2
+    image=cv2.GaussianBlur(image,(5,5),0)
+    image =cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,5,2)
+    image = cv2.GaussianBlur(image,(5,5),0)
+    ret, image = cv2.threshold(image, 125, 255, 0)
     return image
 
 def cut_and_return(video_l,n_cut):
@@ -33,13 +32,12 @@ def cut_frames(video,max,skip=15):
     i=0
     succ=True
     while succ and len(video_l)<=max:
-        if i==skip:
-            print(f"taking frame n° {len(video_l)*skip}")
-            frame=cv2.cvtColor(frame[:Y,:],cv2.COLOR_BGR2GRAY)
-            video_l.append(frame)
-            i=0
-        i+=1
         succ,frame=video.read()
+        video.set(cv2.CAP_PROP_POS_FRAMES, i*skip)
+        print(f"taking frame n° {i*skip}")
+        frame=cv2.cvtColor(frame[:Y,:],cv2.COLOR_BGR2GRAY)
+        video_l.append(frame)
+        i+=1
     return video_l
 
 
@@ -49,7 +47,8 @@ skip=15
 max=50
 
 video_l=cut_frames(video,max,skip)
-n_cut=video_l[0].shape[0] //20
+video_l=video_l
+n_cut=video_l[0].shape[0]//6
 video_l=cut_and_return(video_l,n_cut)
 
 means=[np.var(x) for x in  [[ img.mean() for img in ps ] for ps in video_l]]
@@ -58,20 +57,36 @@ pos=means.index(minimu)
 print(minimu,pos,means)
 #show video
 
-video=cv2.VideoCapture(video_source)
-key=-1 
-while True :
-    succ,frame = video.read()
-    frame=make_things_better(frame)
-    cut=(pos)*frame[:Y,:].shape[0]//(n_cut)
-    frame[cut:cut+frame[:Y,:].shape[0]//n_cut]=cv2.add(frame[cut:cut+frame[:Y,:].shape[0]//n_cut],-50)
-    cv2.imshow("",frame)
-    if key==ord("k"):
-        break
-    key=cv2.waitKey(33//4)
-    if key==ord(" "):
-        key = cv2.waitKey(0)
-        print(chr(key))
 
-#[[1,2,3],[1,2,3,],[1,2,3],[1,2,3]]
-#[[1,1,1,1],[2,2,2,2],[3,3,3,3]]
+key=-1 
+
+succ,frame = video.read()
+
+cut=(pos)*frame[:Y,:].shape[0]//(n_cut)+10
+v_stack=frame[cut:cut+frame[:Y,:].shape[0]//n_cut]
+frame[cut:cut+frame[:Y,:].shape[0]//n_cut]=cv2.add(frame[cut:cut+frame[:Y,:].shape[0]//n_cut],50)
+i=0
+video=cv2.VideoCapture(video_source)
+#cv2.imshow("",frame)
+#cv2.waitKey(0)
+#cv2.destroyAllWindows()
+n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)
+while succ and i<n_frame:
+    i+=1
+    succ,frame = video.read()
+    v_stack=np.vstack([frame[cut:cut+frame[:Y,:].shape[0]//n_cut],v_stack])
+    print(f"Frame n°,{i} out of {n_frame}" )
+
+    #frame=make_things_better(frame)
+    # cv2.imshow("",frame[cut:cut+frame[:Y,:].shape[0]//n_cut])
+    if not True:
+        cv2.namedWindow("v stack", cv2.WINDOW_NORMAL)
+        cv2.imshow("v stack",v_stack)
+        if key==ord("k"):
+            break
+        key=cv2.waitKey(1)
+        if key==ord(" "):
+            key = cv2.waitKey(99999999)
+print("done")
+cv2.imwrite("vstack_th.jpg",make_things_better(v_stack))
+cv2.imwrite("vstack_noth.jpg",v_stack)
