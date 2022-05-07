@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
-from multiprocessing import Process,Value,Array
+from multiprocessing import Process,Value,Array,managers
+
+from sympy import arg
 Y=300
 video_source="video1.mp4"
 
@@ -34,59 +36,66 @@ def cut_frames(video,max,skip=15):
     while succ and len(video_l)<=max:
         succ,frame=video.read()
         video.set(cv2.CAP_PROP_POS_FRAMES, i*skip)
-        print(f"taking frame n° {i*skip}")
         frame=cv2.cvtColor(frame[:Y,:],cv2.COLOR_BGR2GRAY)
         video_l.append(frame)
         i+=1
     return video_l
 
+def stack_it_all(id,video_name,start,stop,stack_list,cut_value,Y,n_cut):
+    video=cv2.VideoCapture(video_name)
+    video.set(cv2.CAP_PROP_POS_FRAMES, start)
+    succ,frame = video.read()
+    v_stack=frame[cut_value:cut_value+frame[:Y,:].shape[0]//n_cut]
+    i=0
+    print(f"i'm worker n° {id} i will start at {start} and end at {stop}")
+    while succ and start+i<stop:
+        i+=1
+        if i%500 == 1:
+            print(f"i'm {id} at position {start+i} out of {stop}")
+        v_stack=np.vstack([frame[cut_value:cut_value+frame[:Y,:].shape[0]//n_cut],v_stack])
+        succ,frame = video.read()
+    print(f"ended after {i} iterations! id:{id}")
+    stack_list[id]=[id,v_stack]
+    return 
 
 
-video=cv2.VideoCapture(video_source)
-skip=15
-max=50
+if __name__ == '__main__':
+    video=cv2.VideoCapture(video_source)
+    skip=15
+    max=50
 
-video_l=cut_frames(video,max,skip)
-video_l=video_l
-n_cut=video_l[0].shape[0]//6
-video_l=cut_and_return(video_l,n_cut)
+    video_l=cut_frames(video,max,skip)
+    video_l=video_l
+    n_cut=video_l[0].shape[0]//6
+    video_l=cut_and_return(video_l,n_cut)
 
-means=[np.var(x) for x in  [[ img.mean() for img in ps ] for ps in video_l]]
-minimu=min(means)
-pos=means.index(minimu)
-print(minimu,pos,means)
+    means=[np.var(x) for x in  [[ img.mean() for img in ps ] for ps in video_l]]
+    minimu=min(means)
+    pos=means.index(minimu)
 #show video
 
 
-key=-1 
+    key=-1 
 
-succ,frame = video.read()
-
-cut=(pos)*frame[:Y,:].shape[0]//(n_cut)+10
-v_stack=frame[cut:cut+frame[:Y,:].shape[0]//n_cut]
-frame[cut:cut+frame[:Y,:].shape[0]//n_cut]=cv2.add(frame[cut:cut+frame[:Y,:].shape[0]//n_cut],50)
-i=0
-video=cv2.VideoCapture(video_source)
-#cv2.imshow("",frame)
-#cv2.waitKey(0)
-#cv2.destroyAllWindows()
-n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)
-while succ and i<n_frame:
-    i+=1
     succ,frame = video.read()
-    v_stack=np.vstack([frame[cut:cut+frame[:Y,:].shape[0]//n_cut],v_stack])
-    print(f"Frame n°,{i} out of {n_frame}" )
-
-    #frame=make_things_better(frame)
-    # cv2.imshow("",frame[cut:cut+frame[:Y,:].shape[0]//n_cut])
-    if not True:
-        cv2.namedWindow("v stack", cv2.WINDOW_NORMAL)
-        cv2.imshow("v stack",v_stack)
-        if key==ord("k"):
-            break
-        key=cv2.waitKey(1)
-        if key==ord(" "):
-            key = cv2.waitKey(99999999)
-print("done")
-cv2.imwrite("vstack_th.jpg",make_things_better(v_stack))
-cv2.imwrite("vstack_noth.jpg",v_stack)
+    cut=(pos)*frame[:Y,:].shape[0]//(n_cut)+10
+    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)
+    n_worker=5
+    frame_per_process=int(n_frame//n_worker)
+    manage=managers.SyncManager()
+    manage.start()
+    list_of=manage.dict()
+    worker=[]
+    print("every worker has:",frame_per_process,"frames")
+    for i in range(0,n_worker):
+        worker.append(Process(target=stack_it_all,args=(i,video_source,frame_per_process*i,frame_per_process*(i+1),list_of,cut,Y,n_cut)))
+    for job in worker:
+        job.start()
+    for job in worker:
+        job.join()
+    v_stack=list_of[0][1]
+    for i in range(1,n_worker):
+        v_stack=np.vstack([list_of[i][1],v_stack])
+    v_stack=cv2.cvtColor(v_stack,cv2.CV_8UC1)
+    cv2.imwrite("vstack_th.jpg",make_things_better(v_stack))    
+    cv2.imwrite("vstack_noth.jpg",v_stack)
