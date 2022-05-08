@@ -19,7 +19,7 @@ def read(video):
     success,frame=video.read()
     #frame=make_things_better(frame)
     return success,frame
-video_name="video2.mp4"
+video_name="video.mp4"
 
 video=cv2.VideoCapture(video_name) #aprire video
 
@@ -72,7 +72,7 @@ for i in range(1,len(video_l)):
         beta = 1.0 - alpha#1/2,2/3,3/4
         dst = cv2.addWeighted(video_l[i], alpha, dst, beta, 0.0)#somma pesata 
 
-dst=make_things_better(dst)
+#dst=make_things_better(dst)
 
 cv2.imshow("",dst)
 cv2.imwrite(video_name+".jpg",dst)
