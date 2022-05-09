@@ -3,14 +3,20 @@ import numpy as np
 from multiprocessing import Process,Value,Array,managers
 
 from sympy import arg
-Y=300
-video_source="video1.mp4"
+Y=400
+video_source="video.mp4"
+def shiftimage(img,x,y):
+    M = np.float32([
+	[1, 0, x],#xcoordinate
+	[0, 1, y]])#ycoordinate
+    shifted = cv2.warpAffine(img, M, (img.shape[1], img.shape[0]))
+    return shifted
 
 def make_things_better(image):
     image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) #nohist,55,3,1,nogaussian2,nothreshold2
-    image=cv2.GaussianBlur(image,(5,5),0)
+    image=cv2.GaussianBlur(image,(3,3),0)
     image =cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,5,2)
-    image = cv2.GaussianBlur(image,(5,5),0)
+    image = cv2.GaussianBlur(image,(3,3),0)
     ret, image = cv2.threshold(image, 125, 255, 0)
     return image
 
@@ -45,6 +51,7 @@ def stack_it_all(id,video_name,start,stop,stack_list,cut_value,Y,n_cut):
     video=cv2.VideoCapture(video_name)
     video.set(cv2.CAP_PROP_POS_FRAMES, start)
     succ,frame = video.read()
+    ##frame=cv2.Canny(frame,100,200)
     v_stack=frame[cut_value:cut_value+frame[:Y,:].shape[0]//n_cut]
     i=0
     print(f"i'm worker n° {id} i will start at {start} and end at {stop}")
@@ -52,6 +59,7 @@ def stack_it_all(id,video_name,start,stop,stack_list,cut_value,Y,n_cut):
         i+=1
         if i%500 == 1:
             print(f"i'm {id} at position {start+i} out of {stop}")
+        ##frame=cv2.Canny(frame,100,200)
         v_stack=np.vstack([frame[cut_value:cut_value+frame[:Y,:].shape[0]//n_cut],v_stack])
         succ,frame = video.read()
     print(f"ended after {i} iterations! id:{id}")
@@ -59,43 +67,61 @@ def stack_it_all(id,video_name,start,stop,stack_list,cut_value,Y,n_cut):
     return 
 
 
+
+
 if __name__ == '__main__':
     video=cv2.VideoCapture(video_source)
     skip=15
     max=50
-
     video_l=cut_frames(video,max,skip)
-    video_l=video_l
-    n_cut=video_l[0].shape[0]//6
+    video_rev=video_l[::-1] # for reversing
+    n_cut=video_l[0].shape[0]//3
+    print(n_cut)
     video_l=cut_and_return(video_l,n_cut)
+    video_rev=cut_and_return(video_rev,n_cut)
 
     means=[np.var(x) for x in  [[ img.mean() for img in ps ] for ps in video_l]]
     minimu=min(means)
-    pos=means.index(minimu)
+    pos1=means.index(minimu)
+    means=[np.var(x) for x in  [[ img.mean() for img in ps ] for ps in video_rev]]
+    minimu=min(means)
+    pos2=means.index(minimu)
 #show video
 
 
     key=-1 
-
+    print(pos1,pos2)
     succ,frame = video.read()
-    cut=(pos)*frame[:Y,:].shape[0]//(n_cut)+10
-    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)
+    cuts=[0,0]
+    cuts[0]=((n_cut-1)-pos1)*frame[:Y,:].shape[0]//(n_cut) ## reversed image order 
+    cuts[1]=((pos2)*frame[:Y,:].shape[0]//(n_cut)) #starting from the top
+    print(cuts)
+    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)//10
     n_worker=5
     frame_per_process=int(n_frame//n_worker)
     manage=managers.SyncManager()
     manage.start()
     list_of=manage.dict()
-    worker=[]
     print("every worker has:",frame_per_process,"frames")
-    for i in range(0,n_worker):
-        worker.append(Process(target=stack_it_all,args=(i,video_source,frame_per_process*i,frame_per_process*(i+1),list_of,cut,Y,n_cut)))
-    for job in worker:
-        job.start()
-    for job in worker:
-        job.join()
-    v_stack=list_of[0][1]
-    for i in range(1,n_worker):
-        v_stack=np.vstack([list_of[i][1],v_stack])
-    v_stack=cv2.cvtColor(v_stack,cv2.CV_8UC1)
-    cv2.imwrite("vstack_th.jpg",make_things_better(v_stack))    
-    cv2.imwrite("vstack_noth.jpg",v_stack)
+    flag=0
+    for cut in cuts:
+        print("dimensions:",cut,cut+frame[:Y,:].shape[0]//n_cut)
+        worker=[]
+        for i in range(0,n_worker):
+            worker.append(Process(target=stack_it_all,args=(i,video_source,frame_per_process*i,frame_per_process*(i+1),list_of,cut,Y,n_cut)))
+        for job in worker:
+            job.start()
+        for job in worker:
+            job.join()
+        v_stack=list_of[0][1]
+        for i in range(1,n_worker):
+            v_stack=np.vstack([list_of[i][1],v_stack])
+        v_stack=cv2.cvtColor(v_stack,cv2.CV_8UC1)
+        if flag==0:
+            h_stack=shiftimage(v_stack,0,(cuts[0]-cuts[1])-((cut+frame[:Y,:].shape[0]//n_cut)/2)-6)
+            flag=1
+        else:
+            h_stack=np.hstack([h_stack,v_stack])
+
+    cv2.imwrite("vstack_th.jpg",cv2.Canny(h_stack,100,200))    
+    cv2.imwrite("vstack_noth.jpg",h_stack)
