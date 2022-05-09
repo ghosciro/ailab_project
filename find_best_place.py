@@ -3,8 +3,8 @@ import numpy as np
 from multiprocessing import Process,Value,Array,managers
 
 from sympy import arg
-Y=400
-video_source="video.mp4"
+Y=300
+video_source="video1.mp4"
 def shiftimage(img,x,y):
     M = np.float32([
 	[1, 0, x],#xcoordinate
@@ -13,10 +13,10 @@ def shiftimage(img,x,y):
     return shifted
 
 def make_things_better(image):
-    image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) #nohist,55,3,1,nogaussian2,nothreshold2
-    image=cv2.GaussianBlur(image,(3,3),0)
-    image =cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,5,2)
-    image = cv2.GaussianBlur(image,(3,3),0)
+    #image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) #nohist,55,3,1,nogaussian2,nothreshold2
+    image=cv2.GaussianBlur(image,(5,5),0)
+    image =cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+    image = cv2.GaussianBlur(image,(5,5),0)
     ret, image = cv2.threshold(image, 125, 255, 0)
     return image
 
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     max=50
     video_l=cut_frames(video,max,skip)
     video_rev=video_l[::-1] # for reversing
-    n_cut=video_l[0].shape[0]//3
+    n_cut=video_l[0].shape[0]//6
     print(n_cut)
     video_l=cut_and_return(video_l,n_cut)
     video_rev=cut_and_return(video_rev,n_cut)
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     cuts[0]=((n_cut-1)-pos1)*frame[:Y,:].shape[0]//(n_cut) ## reversed image order 
     cuts[1]=((pos2)*frame[:Y,:].shape[0]//(n_cut)) #starting from the top
     print(cuts)
-    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)//10
+    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)//5
     n_worker=5
     frame_per_process=int(n_frame//n_worker)
     manage=managers.SyncManager()
@@ -118,10 +118,11 @@ if __name__ == '__main__':
             v_stack=np.vstack([list_of[i][1],v_stack])
         v_stack=cv2.cvtColor(v_stack,cv2.CV_8UC1)
         if flag==0:
-            h_stack=shiftimage(v_stack,0,(cuts[0]-cuts[1])-((cut+frame[:Y,:].shape[0]//n_cut)/2)-6)
+            #(Ysopra-Ysotto)-2*pixelpresi-(pixelpresi/2)
+            h_stack=shiftimage(v_stack, 0, (cuts[0]-cuts[1]))
             flag=1
         else:
-            h_stack=np.hstack([h_stack,v_stack])
-
-    cv2.imwrite("vstack_th.jpg",cv2.Canny(h_stack,100,200))    
+            #h_stack=cv2.addWeighted(h_stack,0.2,v_stack,1,0)#somma pesata 
+            pass
+    cv2.imwrite("vstack_th.jpg",cv2.Canny(h_stack,130,200))    
     cv2.imwrite("vstack_noth.jpg",h_stack)
