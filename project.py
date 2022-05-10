@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 
-DEBUG=True 
-#DEBUG=False 
+
+#DEBUG=True 
+DEBUG=False 
 
 
 ##filtri per immagine binario
@@ -19,14 +20,14 @@ def read(video):
     success,frame=video.read()
     #frame=make_things_better(frame)
     return success,frame
-video_name="video.mp4"
+
+video_name="video3.mp4"
 
 video=cv2.VideoCapture(video_name) #aprire video
 
 fps=int(video.get(cv2.CAP_PROP_FPS)) #sapere fps del video
 succ,frame=read(video)
-y=frame.shape[0]-50
-Y=400
+Y=475
 key=0
 while succ and key!=ord("k") and not DEBUG:
     frame=frame[Y:y]
