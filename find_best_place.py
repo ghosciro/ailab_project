@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 from multiprocessing import Process,Value,Array,managers
-
-from sympy import arg
 Y=300
 video_source="video1.mp4"
 def shiftimage(img,x,y):
@@ -13,7 +11,7 @@ def shiftimage(img,x,y):
     return shifted
 
 def make_things_better(image):
-    #image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) #nohist,55,3,1,nogaussian2,nothreshold2
+    image=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) #nohist,55,3,1,nogaussian2,nothreshold2
     image=cv2.GaussianBlur(image,(5,5),0)
     image =cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
     image = cv2.GaussianBlur(image,(5,5),0)
@@ -119,10 +117,16 @@ if __name__ == '__main__':
         v_stack=cv2.cvtColor(v_stack,cv2.CV_8UC1)
         if flag==0:
             #(Ysopra-Ysotto)-2*pixelpresi-(pixelpresi/2)
-            h_stack=shiftimage(v_stack, 0, (cuts[0]-cuts[1]))
+            h_stack=cv2.Canny(v_stack,50,200)
             flag=1
         else:
+            v_stack=cv2.Canny(v_stack,150,200)
             #h_stack=cv2.addWeighted(h_stack,0.2,v_stack,1,0)#somma pesata 
+            h_stack=np.hstack([h_stack,v_stack])
             pass
-    cv2.imwrite("vstack_th.jpg",cv2.Canny(h_stack,130,200))    
-    cv2.imwrite("vstack_noth.jpg",h_stack)
+        cv2.imwrite(f"img{cut}.jpg",v_stack)    
+    cv2.imwrite("vstack_th.jpg",h_stack)    
+    der_x=cv2.Sobel(h_stack,cv2.CV_64F,0,1)
+    abs_der_x=cv2.convertScaleAbs(der_x)
+    cv2.imshow("",abs_der_x)
+    cv2.waitKey(0)
