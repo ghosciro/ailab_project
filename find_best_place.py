@@ -1,8 +1,9 @@
 import cv2
+from cv2 import rectangle
 import numpy as np
 from multiprocessing import Process,Value,Array,managers
 Y=300
-video_source="video1.mp4"
+video_source="video5.mp4"
 def shiftimage(img,x,y):
     M = np.float32([
 	[1, 0, x],#xcoordinate
@@ -114,19 +115,45 @@ if __name__ == '__main__':
         v_stack=list_of[0][1]
         for i in range(1,n_worker):
             v_stack=np.vstack([list_of[i][1],v_stack])
-        v_stack=cv2.cvtColor(v_stack,cv2.CV_8UC1)
         if flag==0:
             #(Ysopra-Ysotto)-2*pixelpresi-(pixelpresi/2)
-            h_stack=cv2.Canny(v_stack,50,200)
+            v_stack1=v_stack
+            cv2.imwrite(f"{cut}.jpg",v_stack)
             flag=1
         else:
-            v_stack=cv2.Canny(v_stack,150,200)
-            #h_stack=cv2.addWeighted(h_stack,0.2,v_stack,1,0)#somma pesata 
-            h_stack=np.hstack([h_stack,v_stack])
-            pass
-        cv2.imwrite(f"img{cut}.jpg",v_stack)    
-    cv2.imwrite("vstack_th.jpg",h_stack)    
-    der_x=cv2.Sobel(h_stack,cv2.CV_64F,0,1)
-    abs_der_x=cv2.convertScaleAbs(der_x)
-    cv2.imshow("",abs_der_x)
-    cv2.waitKey(0)
+            cv2.imwrite(f"{cut}.jpg",v_stack)
+            #h_stack=cv2.addWeighted(v_stack1,0.2,v_stack,1,0)#somma pesata 
+            h_stack=np.hstack([v_stack1,v_stack])
+    cv2.imwrite("vstack_noth.jpg",h_stack)    
+    h_stack_b=cv2.Canny(h_stack,150,200)
+    cv2.imwrite("vstack_th.jpg",h_stack_b) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    '''
+    rectangle_list=cv2.HoughLinesP(h_stack_b, 5,np.pi/2, 0,minLineLength=7,maxLineGap= 0 ) 
+    h_stack_b=cv2.cvtColor(h_stack_b,cv2.COLOR_GRAY2BGR)
+    angle=0
+    for element in rectangle_list:
+        element=element[0]
+        angle = np.arctan2(element[3] - element[1], element[2] - element[0]) * 180. / np.pi
+        if angle == 0 or angle == 180:
+            h_stack_b=cv2.line(h_stack_b,[element[0],element[1]],[element[2],element[3]],(0,0,255),3)
+    cv2.imwrite("vstack_th_lines.jpg",h_stack_b)
+    #der_x=cv2.Sobel(h_stack,cv2.CV_64F,0,1)
+   # abs_der_x=cv2.convertScaleAbs(der_x)
+   # cv2.imshow("",abs_der_x)
+    #cv2.waitKey(0)
+    '''
