@@ -125,31 +125,3 @@ if __name__ == '__main__':
             #h_stack=cv2.addWeighted(v_stack1,0.2,v_stack,1,0)#somma pesata 
             h_stack=np.hstack([v_stack1,v_stack])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-    '''
-    rectangle_list=cv2.HoughLinesP(h_stack_b, 5,np.pi/2, 0,minLineLength=7,maxLineGap= 0 ) 
-    h_stack_b=cv2.cvtColor(h_stack_b,cv2.COLOR_GRAY2BGR)
-    angle=0
-    for element in rectangle_list:
-        element=element[0]
-        angle = np.arctan2(element[3] - element[1], element[2] - element[0]) * 180. / np.pi
-        if angle == 0 or angle == 180:
-            h_stack_b=cv2.line(h_stack_b,[element[0],element[1]],[element[2],element[3]],(0,0,255),3)
-    cv2.imwrite("vstack_th_lines.jpg",h_stack_b)
-    #der_x=cv2.Sobel(h_stack,cv2.CV_64F,0,1)
-   # abs_der_x=cv2.convertScaleAbs(der_x)
-   # cv2.imshow("",abs_der_x)
-    #cv2.waitKey(0)
-    '''
