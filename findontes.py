@@ -29,4 +29,4 @@ for indexes in range(img.shape[0],height_step,-height_step):
         cv2.waitKey(0)
     if key == ord("k"):
         break
->>>>>>> 235cdfa4aae81dae6cc360363e80337db401c849
+
