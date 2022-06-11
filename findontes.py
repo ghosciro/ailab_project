@@ -7,6 +7,7 @@ img=cv2.imread("i.jpg",cv2.IMREAD_GRAYSCALE)
 notes=["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 height_step=20
 N = container.Track()
+prova=[]
 for indexes in range(img.shape[0],height_step,-height_step):
     element=img[indexes-height_step:indexes]
     slicing=12
@@ -14,7 +15,7 @@ for indexes in range(img.shape[0],height_step,-height_step):
     for i,e in enumerate( element_list):  
         if np.count_nonzero(e)>50:
             N + notes[i]
-    N.add_bar(container.Bar().place_rest())
+            prova.append(notes[i])
 bar = LilyPond.from_Track(N) 
-print(bar)
+print(prova)
 LilyPond.to_png(bar, "my_first_bar")
