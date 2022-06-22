@@ -95,7 +95,7 @@ if __name__ == '__main__':
     cuts[0]=((n_cut-1)-pos1)*frame[:Y,:].shape[0]//(n_cut) ## reversed image order 
     cuts[1]=((pos2)*frame[:Y,:].shape[0]//(n_cut)) #starting from the top
     print(cuts)
-    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)//5
+    n_frame=video.get(cv2. CAP_PROP_FRAME_COUNT)
     n_worker=5
     frame_per_process=int(n_frame//n_worker)
     manage=managers.SyncManager()
