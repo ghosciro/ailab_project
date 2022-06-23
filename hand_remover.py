@@ -21,7 +21,7 @@ def read(video):
     #frame=make_things_better(frame)
     return success,frame
 
-video_name="video3.mp4"
+video_name="video8.mp4"
 
 video=cv2.VideoCapture(video_name) #aprire video
 
@@ -30,6 +30,7 @@ succ,frame=read(video)
 Y=350
 y=275
 key=0
+print(video_name)
 while succ and key!=ord("k") and not DEBUG:
     frame=frame[Y:y]
     cv2.imshow("",frame)

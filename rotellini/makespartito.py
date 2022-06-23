@@ -134,7 +134,7 @@ def to_lilypond(magic_spartito):
 # print(prova)
 # spartito=to_lilypond(prova)      
 # print(prova)
-def rotellini(prova):
+def rotellini(prova,path=""):
     spartito=magic_spartito(prova)
     spartito1,spartito2 = divide_spartito(spartito)
     spartito1=to_lilypond(add_legature(spartito1))
@@ -147,14 +147,14 @@ def rotellini(prova):
     text+=spartito2+"\n\n"
     text+='}\n\score {\n'+r'\new'+' PianoStaff \with { instrumentName = "Piano" }\n<<\n'+r'\new' + r' Staff = "upper" \upper'+'\n' + r"\new" + ' Staff = "lower" \lower\n>>\n\layout { }\n\midi { }\n}'
 
-    f = open("./files_spartito\spartito.ly", "w")
+    f = open(f"{path}spartito.ly", "w")
     f.write(text)
     f.close()
 
     print(text)
 
     import os
-    os.startfile("./files_spartito\spartito.ly")
+    os.startfile(f"{path}spartito.ly")
     return 
 
 

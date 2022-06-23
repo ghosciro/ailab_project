@@ -52,12 +52,12 @@ for ct in contours2:
         x=np.min(np.abs(ds[:,0]-x))
         if x<10 and x>-10:
             y=(np.min(np.abs(ds[:,1]-y)))
-            if y>200 and y<600:
+            if y>500 and y<700:
                 y_shift.append(y)
                 print(y_shift[-1])
 y_shift=np.mean(y_shift)
 print(y_shift)
 newimage=cv2.addWeighted(img1,0.2,shiftimage(img2,0,-y_shift),1,0)
 #newimage=cv2.Canny(newimage,100,180)
-img=cv2.Canny(newimage,150,200)
-cv2.imwrite("i.jpg",img)
+#img=cv2.Canny(newimage,150,200)
+cv2.imwrite("i.jpg",newimage)
