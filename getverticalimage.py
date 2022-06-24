@@ -118,10 +118,9 @@ if __name__ == '__main__':
         if flag==0:
             #(Ysopra-Ysotto)-2*pixelpresi-(pixelpresi/2)
             v_stack1=v_stack
-            cv2.imwrite("Top_image.jpg",v_stack)
             flag=1
         else:
-            cv2.imwrite("lower_image.jpg",v_stack)
+            cv2.imwrite(f"{video_source}-vstack.jpg",v_stack)
             #h_stack=cv2.addWeighted(v_stack1,0.2,v_stack,1,0)#somma pesata 
             h_stack=np.hstack([v_stack1,v_stack])
 

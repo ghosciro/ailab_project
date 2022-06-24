@@ -1,8 +1,4 @@
 
-
-#prova= [[], ['F#-2', 'F#-3'], ['E-2', 'F#-3', 'G#-2'], ['G#-2', 'E-2'], ['G#-2', 'E-2'], ['E-1', 'F-1', 'G#-1'], ['F-1'], ['F#-1', 'G#-1'], ['G#-1', 'F#-1'],['F#-2'],[],[]]
-prova=[['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2']]
-
 def good_time(n):
         lst=[0,1,2,4,8,16,32]
         return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-n))]
@@ -134,35 +130,33 @@ def to_lilypond(magic_spartito):
 # print(prova)
 # spartito=to_lilypond(prova)      
 # print(prova)
-def rotellini(prova,path=""):
+def rotellini(prova):
     spartito=magic_spartito(prova)
     spartito1,spartito2 = divide_spartito(spartito)
     spartito1=to_lilypond(add_legature(spartito1))
     spartito2=to_lilypond(add_legature(spartito2))
 
 
-    text=r"upper = \fixed a,,, "+" { \n\clef treble\n\key c \major\n"+ r'\time 4/4'+"\n\n"
+    text=r"upper = \fixed a,,, "+" { \n\clef treble\n\key c \major\n"+ r'\time 2/4'+"\n\n"
     text+=spartito1+"\n\n"
-    text+="}\n"+r"lower = \fixed a,,, "+" {\n\clef bass\n\key c \major\n"+r"\time 4/4"+"\n\n"
+    text+="}\n"+r"lower = \fixed a,,, "+" {\n\clef bass\n\key c \major\n"+r"\time 2/4"+"\n\n"
     text+=spartito2+"\n\n"
     text+='}\n\score {\n'+r'\new'+' PianoStaff \with { instrumentName = "Piano" }\n<<\n'+r'\new' + r' Staff = "upper" \upper'+'\n' + r"\new" + ' Staff = "lower" \lower\n>>\n\layout { }\n\midi { }\n}'
 
-    f = open(f"{path}spartito.ly", "w")
+    f = open('spartito.ly', "w")
     f.write(text)
     f.close()
 
-    print(text)
+    #print(text)
 
     import os
-    os.startfile(f"{path}spartito.ly")
+    os.startfile('spartito.ly')
     return 
-
-
 """
 \version "2.22.2"
 \fixed a,,, {
   \clef violin
-  \time 4/4
+  \time 2/4
 
  r8 << {fis'''8~8} {fis''8}>> r4 << {f'8~8} {e'8} {gis'8}>> << {gis'4} {fis'4}>> r4
 

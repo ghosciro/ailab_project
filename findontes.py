@@ -20,8 +20,8 @@ def make_things_better(image):
     return image
 
 
-
-img=cv2.imread("lower_image.jpg")
+video="video1"
+img=cv2.imread(f"{video}.mp4-vstack.jpg")
 daf  = pd.read_excel("coordinates.xlsx")
 x0=daf["bbox-1"]
 names=daf["name"]
@@ -67,10 +67,11 @@ rotellini(notes,"")
 '''
 
 
-element=img[0:img.shape[0]]
+element=img[img.shape[0]-2000:img.shape[0]]
 print(element.shape[0])
 gray = cv2.cvtColor(element, cv2.COLOR_BGR2GRAY)
 test = cv2.Canny(element,230,250)#make_things_better(element)
+
 label_image = measure.label(test,connectivity=2)
 label_image_rgb = label2rgb(label_image, image=test, bg_label=0)
 
@@ -78,23 +79,27 @@ props = measure.regionprops_table(
         label_image, gray, properties=[ "area","bbox"],
     )
 df = pd.DataFrame(props)
+print(min(df["area"].values))
+
 df = df[df["area"] > 200 ]
+print(min(df["area"].values))
 df=df.iloc[::-1]
-print(df)
+#print(df)
 skimage.io.imsave("save.jpg",label_image_rgb)
-quarter=100
+quarter=48
 notes=[]
 for i in range(element.shape[0],0,-quarter):
     note=[]
     for element in df.values:
+        if element[4]-element[2]>30:
+            print("nota grande!!!, so 2 queste bro, posizione:",i,"\t",element)
         if element[1]<i and element[3]>i:
             media=(element[2]+element[4])//2
-            print(i,"element:",element)
+            #print(i,element,media)
             for y in range(len(x0)):
                 if media>=x0[y] and media<=x1[y]:
                     note.append(names[y])
     if note!=[]:
         notes.append(note)
-
-print(len(notes))
+print(notes)
 rotellini(notes)
