@@ -13,6 +13,7 @@ class noterecognito:
     def __init__(self, Vsatck, notees_database):
         self.Vsatck = Vsatck
         self.notes_database = notees_database
+    
     def get_rectangles(self,binary_img):
         label_image = measure.label(binary_img, connectivity=2)
         label_image_rgb = label2rgb(label_image, image=binary_img, bg_label=0)
@@ -21,6 +22,7 @@ class noterecognito:
         df = df[df["area"] > 200].iloc[::-1]
         skimage.io.imsave("save.jpg", label_image_rgb)
         return df
+   
     def get_notes(self, height_step):
         x0 = self.notes_database["bbox-1"]
         names = self.notes_database["name"]
