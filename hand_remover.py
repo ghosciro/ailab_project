@@ -21,11 +21,12 @@ def read(video):
     #frame=make_things_better(frame)
     return success,frame
 
-video_name="video8.mp4"
+video_name="video1.mp4"
 
 video=cv2.VideoCapture(video_name) #aprire video
 
 fps=int(video.get(cv2.CAP_PROP_FPS)) #sapere fps del video
+print(fps)
 succ,frame=read(video)
 Y=350
 y=275
