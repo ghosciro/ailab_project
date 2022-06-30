@@ -2,15 +2,45 @@ import cv2
 import numpy as np
 from multiprocessing import Process,managers
 Y=300
-video_source="video1.mp4"
-
 
 class Vertical_image:
-    def __init__(self,video,ncut):
+    def __init__(self,video,tries,Y):
+            self.Y=Y
+            self.video_source=video
             self.kip=15
             self.max=50
-            self.video=video
-            self.n_cut=ncut
+            self.video=cv2.VideoCapture(video)
+            self.n_cut=self.get_speed(tries)
+            self.video=cv2.VideoCapture(video)
+    def get_speed(self,n_try):
+        frame_count = int(self.video.get(cv2. CAP_PROP_FRAME_COUNT))
+        self.video.set(cv2.CAP_PROP_POS_FRAMES,frame_count//2 )
+        x_old=y_old=w_old=h_old=area_old = 0
+        flag=1
+        speed=[]
+        for i in range(n_try):
+            _,frame = self.video.read()
+            frame=frame[:Y]
+            canny = cv2.Canny(frame, 230, 250)
+            contours=cv2.findContours(canny,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)[0]
+            rectangles=[]
+            for i in contours:
+                x,y,w,h = cv2.boundingRect(i)
+                if y+h<Y-10 and y>y_old :
+                    rectangles.append([x,y,w,h,w*h])
+                    cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            rectangles.sort(key= lambda x: x[1])
+            speed.append((rectangles[0][1]+rectangles[0][3])-(y_old+h_old))
+            x_old,y_old,w_old,h_old,area_old = rectangles[0]
+            cv2.rectangle(frame, (x_old, y_old), (x_old + w_old, y_old + h_old), (0, 255, 0), 2)
+            #cv2.imshow("",frame)
+            #cv2.waitKey(0)
+            #cv2.destroyAllWindows()
+        return frame[:Y].shape[0]//int(np.mean(speed[1:]))
+
+
+
+
     def shiftimage(self,img,x,y):
         M = np.float32([
 	    [1, 0, x],#xcoordinate
@@ -73,7 +103,7 @@ class Vertical_image:
         print("dimensions:",cut,cut+(frame[:Y,:].shape[0]//self.n_cut))
         worker=[]
         for i in range(0,n_worker):
-            worker.append(Process(target=Vertical_image.stack_it_all,args=(i,video_source,frame_per_process*i,frame_per_process*(i+1),list_of,cut,Y,cut+frame[:Y,:].shape[0]//self.n_cut)))
+            worker.append(Process(target=Vertical_image.stack_it_all,args=(i,self.video_source,frame_per_process*i,frame_per_process*(i+1),list_of,cut,Y,self.n_cut)))
         for job in worker:
             job.start()
         for job in worker:
@@ -87,6 +117,7 @@ class Vertical_image:
         video.set(cv2.CAP_PROP_POS_FRAMES, start)
         succ,frame = video.read()
         v_stack=frame[cut_value:cut_value+frame[:Y,:].shape[0]//n_cut]
+        print(v_stack.shape)
         i=0
         print(f"i'm worker n° {id} i will start at {start} and end at {stop}")
         while succ and start+i<stop:

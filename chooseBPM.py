@@ -9,7 +9,9 @@ def chooseBPM(df):
     """
 
     firstValue = df["bbox-0"].min()
+    df = df[df["area"]>(df["area"].max()/1.3)]
     df = [x for x in df["bbox-2"].to_list()[::-1]]
+ 
     lastValue = max(df)
     bestPick = {bpm: 0 for bpm in range(60, 140)}
 
@@ -18,15 +20,13 @@ def chooseBPM(df):
         CONSTANT = (200 - bpm) // 10
         listOfStartingNotes = [y for x in df for y in range(x - CONSTANT, x + CONSTANT)]
 
-        jump = (lastValue - firstValue) / bpm
+        jump = (lastValue - firstValue) / bpm/16
         count = firstValue
 
         while count < lastValue:
             if int(count) in listOfStartingNotes:
                 bestPick[bpm] += 1
             count += jump
-
-    print(bestPick)
     # Finding the maximum value in the dictionary and returning the key associated with it.
     maxForNow = 0
     solution = None
@@ -40,11 +40,11 @@ def chooseBPM(df):
 df = pd.read_excel("rect.xlsx")
 bpm, firstValue, lastValue = chooseBPM(df)
 
-print("bpm", bpm)
+print("bpm", bpm,firstValue,lastValue)
 
 img = cv2.imread("save.jpg")
 count = firstValue
-jump = (lastValue - firstValue) / bpm / 4
+jump = (lastValue - firstValue) / bpm / 16
 while count < lastValue:
 
     cv2.line(img, (0, int(count)), (1280, int(count)), (0, 255, 0), thickness=2)
