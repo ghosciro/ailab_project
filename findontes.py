@@ -70,7 +70,7 @@ class noterecognito:
         bpm, firstValue, lastValue = self.chooseBPM(df)
         self.bpm=bpm
         print(bpm,firstValue,lastValue)
-        height_step =((lastValue - firstValue) // bpm // 32)
+        height_step =((lastValue - firstValue) // bpm // 16)
         print(height_step)
         notes = []
         media = 0
@@ -78,7 +78,7 @@ class noterecognito:
             #print(i)
             note = []
             for element in df.values:
-                if element[1]+2 < i+height_step and element[3]-2 > i:
+                if element[1]+3 < i+height_step and element[3]-3 > i:
                     if element[4]-element[2] > 30:
                         #print("found double note")
                         doublenotes = test[i:i+height_step, element[2]:element[4]]
@@ -100,7 +100,7 @@ class noterecognito:
                             if media >= x0[y] and media <= x1[y]:
                                 note.append(names[y])
             if note != []:
-                #cv2.imshow("output",test[i+5:i+height_step-5]) 
+                #cv2.imshow("output",test[i+3:i+height_step-3]) 
                 #print(note)
                 #cv2.waitKey(0)
 
