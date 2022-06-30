@@ -19,10 +19,13 @@ def Magic_spartito(perception):    # note con intervalli più lunghi di 8 da fix
 
     result = [[] for i in range(len(perception))]
     repeated=set()
+    c=0
     for i,note_list in enumerate(perception):
+        c+=1
         if note_list or repeated:
             for note in repeated.copy():
-                if note not in note_list or note_interval[note]==32:
+                
+                if note not in note_list or c==16:
                     result[i-note_interval[note]].append((note, note_interval[note]))  #note interval and additional time for the legature
                     note_interval[note] = 0
                     repeated.remove(note)
@@ -34,6 +37,8 @@ def Magic_spartito(perception):    # note con intervalli più lunghi di 8 da fix
                     note_interval[note] += 1
         else:
             result[i] = []
+        if c==16:
+            c=0
     #print(result)
     return result
 
@@ -46,9 +51,9 @@ def toMIDI(bpm, perception):
     for note_list in magic_spartito:
         
         for note in note_list:
-            midi.addNote(0, 0, translation[note[0]], time, note[1]/8, 100)
-        #time += 0.25 for 1/16
-        time += 0.125
+            midi.addNote(0, 0, translation[note[0]], time, note[1]/4, 100) #note[1]/4 for 1/8 #note[1]/8 for 1/32
+        time += 0.25 #for 1/16
+        #time += 0.03125 #for 1/32
     with open("./spartito.mid", "wb") as file:
         midi.writeFile(file)
     os.system('cmd /k "MidiSheetMusic-2.6.2.exe spartito.mid"')

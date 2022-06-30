@@ -21,14 +21,17 @@ def read(video):
     #frame=make_things_better(frame)
     return success,frame
 
-video_name="video3.mp4"
+video_name="video1.mp4"
 
 video=cv2.VideoCapture(video_name) #aprire video
 
 fps=int(video.get(cv2.CAP_PROP_FPS)) #sapere fps del video
+print(fps)
 succ,frame=read(video)
-Y=475
+Y=350
+y=275
 key=0
+print(video_name)
 while succ and key!=ord("k") and not DEBUG:
     frame=frame[Y:y]
     cv2.imshow("",frame)
@@ -41,6 +44,8 @@ while succ and key!=ord("k") and not DEBUG:
         y-=int(input())
         print(Y,y-frame.shape[0])
     succ,frame=read(video)
+    if key==ord("k"):
+        break
 cv2.destroyAllWindows()
 
 
@@ -51,8 +56,8 @@ i=0
 
 print("cropping,wait for me")
 
-DISTANCE=15
-MAX_FRAME=30
+DISTANCE=10
+MAX_FRAME=300
 
 #prendere MAX_FRAME frame del video ogni DISTANCE frame
 while succ and len(video_l)<MAX_FRAME:
