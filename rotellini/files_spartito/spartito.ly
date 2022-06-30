@@ -3,7 +3,7 @@ upper = \fixed a,,,  {
 \key c \major
 \time 4/4
 
- r1 r2
+ << {a'''''8~4} {gis'''''8}>> r8 << {e'''''4}>> << {a'''''4}>> r1
 
 }
 lower = \fixed a,,,  {
@@ -11,7 +11,7 @@ lower = \fixed a,,,  {
 \key c \major
 \time 4/4
 
- << {fis''1}>> r2
+ << {fis''''8~8} {cis''''8}>> r8 << {d'''4}>> r8 << {e''''1}>> r8
 
 }
 \score {

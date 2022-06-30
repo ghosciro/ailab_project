@@ -78,3 +78,4 @@ cv2.imshow("",dst)
 cv2.imwrite(video_name+".jpg",dst)
 
 cv2.waitKey(0)
+

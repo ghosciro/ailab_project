@@ -1,7 +1,4 @@
-
-
-#prova= [[], ['F#-2', 'F#-3'], ['E-2', 'F#-3', 'G#-2'], ['G#-2', 'E-2'], ['G#-2', 'E-2'], ['E-1', 'F-1', 'G#-1'], ['F-1'], ['F#-1', 'G#-1'], ['G#-1', 'F#-1'],['F#-2'],[],[]]
-prova=[['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2'],['F#-2']]
+from copy import deepcopy
 
 def good_time(n):
         lst=[0,1,2,4,8,16,32]
@@ -10,8 +7,8 @@ def good_time(n):
 #just add intervals to the note
 def magic_spartito(perception):    # note con intervalli più lunghi di 8 da fixare
     
-
-    dizio={"A-0":0, "A#-0":0, "B-0":0, "C-1":0, "C#-1":0, "D-1":0, "D#-1":0, "E-1":0, "F-1":0, "F#-1":0, "G-1":0, "G#-1":0, "A-1":0, "A#-1":0, "B-1":0,
+    perception = perception + [[],[],[],[],[],[],[],[]]
+    note_interval={"A-0":0, "A#-0":0, "B-0":0, "C-1":0, "C#-1":0, "D-1":0, "D#-1":0, "E-1":0, "F-1":0, "F#-1":0, "G-1":0, "G#-1":0, "A-1":0, "A#-1":0, "B-1":0,
             "C-2":0, "C#-2":0, "D-2":0, "D#-2":0, "E-2":0, "F-2":0, "F#-2":0, "G-2":0, "G#-2":0, "A-2":0, "A#-2":0, "B-2":0,
             "C-3":0, "C#-3":0, "D-3":0, "D#-3":0, "E-3":0, "F-3":0, "F#-3":0, "G-3":0, "G#-3":0, "A-3":0, "A#-3":0, "B-3":0,
             "C-4":0, "C#-4":0, "D-4":0, "D#-4":0, "E-4":0, "F-4":0, "F#-4":0, "G-4":0, "G#-4":0, "A-4":0, "A#-4":0, "B-4":0,
@@ -24,18 +21,19 @@ def magic_spartito(perception):    # note con intervalli più lunghi di 8 da fix
     for i,note_list in enumerate(perception):
         if note_list or repeated:
             for note in repeated.copy():
-                if note not in note_list or dizio[note]==8:
-                    result[i-dizio[note]].append((note,good_time(dizio[note]),0))  #note interval and additional time for the legature
-                    dizio[note]=0
+                if note not in note_list or note_interval[note]==8:
+                    result[i-note_interval[note]].append((note,good_time(note_interval[note]),0))  #note interval and additional time for the legature
+                    note_interval[note]=0
                     repeated.remove(note)
             for note in note_list:
                 if note not in repeated:
                     repeated.add(note)
-                    dizio[note]+=1
+                    note_interval[note]+=1
                 else:
-                    dizio[note]+=1
+                    note_interval[note]+=1
         else:
             result[i]=[]
+    print(result)
     return result
 
 
@@ -68,17 +66,19 @@ def add_legature(magic_spartito):
     for t,note_list in enumerate(magic_spartito.copy()):
         if c==0 and note_list:
             times=[element[1] for element in note_list]
-            c=times[0]-1
-            if set([good_time(time) for time in times])!=1:
-                new=[]
+            c=times[-1]-1
+            if len(set([good_time(time) for time in times]))!=1:
                 shortest_interval=times[-1]
                 magic_spartito[t] = [(note[0],shortest_interval,good_time(note[1]-shortest_interval)) for note in note_list]
-            
+                for i,note in enumerate(note_list):
+                    if note[2] == 0 and note[1]<times[1]:
+                        magic_spartito[t][i]=(note[0],note[1],magic_spartito[t+shortest_interval])
+                        magic_spartito[t+shortest_interval]=[]
 
         else:
             if c>0: c-=1 
             magic_spartito[t] = []
-            
+    print(magic_spartito,"AAAAA\n")        
     return magic_spartito       
                 
 
@@ -93,7 +93,7 @@ def to_lilypond(magic_spartito):
         if note_list:
             if pause_counter>0:
                 
-                if pause_counter == 6:
+                if pause_counter == 6:    #da rivedere
                     result+=" r2 r4"
                 else:
                     result+=f" r{time_to_lilipond(good_time(pause_counter))}"
@@ -128,12 +128,7 @@ def to_lilypond(magic_spartito):
 
 
 
-# prova=magic_spartito(prova)
-# print(prova)
-# spartito=add_legature(prova)
-# print(prova)
-# spartito=to_lilypond(prova)      
-# print(prova)
+
 def rotellini(prova):
     spartito=magic_spartito(prova)
     spartito1,spartito2 = divide_spartito(spartito)
@@ -147,27 +142,17 @@ def rotellini(prova):
     text+=spartito2+"\n\n"
     text+='}\n\score {\n'+r'\new'+' PianoStaff \with { instrumentName = "Piano" }\n<<\n'+r'\new' + r' Staff = "upper" \upper'+'\n' + r"\new" + ' Staff = "lower" \lower\n>>\n\layout { }\n\midi { }\n}'
 
-    f = open("./files_spartito\spartito.ly", "w")
+    f = open('spartito.ly', "w")
     f.write(text)
     f.close()
 
-    print(text)
+    #print(text)
 
     import os
-    os.startfile("./files_spartito\spartito.ly")
+    os.startfile('spartito.ly')
     return 
 
+rotellini([['C-5', 'G#-4', 'F-4'], ['C-5', 'G#-4', 'F-4'], ['C-5', 'G#-4', 'F-4'], ['C-5', 'G#-4', 'F-4'], ['C-5', 
+'G#-4', 'F-4'], ['C-5', 'G#-4', 'F-4'], ['C-5', 'G#-4', 'F-4'], ['C-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 
+'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C#-5', 'G#-4', 'F-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['C-5', 'G#-4', 'D#-4'], ['G#-4', 'A#-4', 'D#-4'], ['G#-4', 'A#-4', 'D#-4'], ['G#-4', 'A#-4', 'D#-4'], ['G#-4', 'A#-4', 'D#-4'], ['G-4','A#-4', 'D#-4'], ['A#-4', 'D#-4', 'G-4'], ['A#-4', 'D#-4', 'G-4'], ['A#-4', 'D#-4', 'G-4']])
 
-"""
-\version "2.22.2"
-\fixed a,,, {
-  \clef violin
-  \time 4/4
-
- r8 << {fis'''8~8} {fis''8}>> r4 << {f'8~8} {e'8} {gis'8}>> << {gis'4} {fis'4}>> r4
-
-% a b b' a' a''''
-}
-
-
-"""

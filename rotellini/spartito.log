@@ -1,0 +1,30 @@
+# -*-compilation-*-
+Elaborazione di «B:/ai lab project/rotellini/spartito.ly»
+Analisi...
+B:/ai lab project/rotellini/spartito.ly:1:2: errore: GUILE ha segnalato un errore per l'espressione che inizia qui
+$
+  midi2ly --key=-2:1 --duration-quant=32 --allow-tuplet=4*2/3 --allow-tuplet=2*4/3 foo.midi
+B:/ai lab project/rotellini/spartito.ly:1:11: errore: syntax error, unexpected '-'
+$ midi2ly 
+          --key=-2:1 --duration-quant=32 --allow-tuplet=4*2/3 --allow-tuplet=2*4/3 foo.midi
+B:/ai lab project/rotellini/spartito.ly:1:19: errore: syntax error, unexpected ':'
+$ midi2ly --key=-2
+                  :1 --duration-quant=32 --allow-tuplet=4*2/3 --allow-tuplet=2*4/3 foo.midi
+B:/ai lab project/rotellini/spartito.ly:1:44: errore: syntax error, unexpected SYMBOL, expecting UNSIGNED or REAL or NUMBER_IDENTIFIER or '-'
+$ midi2ly --key=-2:1 --duration-quant=32 --
+                                           allow-tuplet=4*2/3 --allow-tuplet=2*4/3 foo.midi
+B:/ai lab project/rotellini/spartito.ly:1:59: errore: syntax error, unexpected FRACTION, expecting UNSIGNED or REAL or NUMBER_IDENTIFIER or '-'
+$ midi2ly --key=-2:1 --duration-quant=32 --allow-tuplet=4*
+                                                          2/3 --allow-tuplet=2*4/3 foo.midi
+B:/ai lab project/rotellini/spartito.ly:1:80: errore: syntax error, unexpected FRACTION, expecting UNSIGNED or REAL or NUMBER_IDENTIFIER or '-'
+$ midi2ly --key=-2:1 --duration-quant=32 --allow-tuplet=4*2/3 --allow-tuplet=2*
+                                                                               4/3 foo.midi
+B:/ai lab project/rotellini/spartito.ly:1:88: errore: syntax error, unexpected end of input, expecting '='
+$ midi2ly --key=-2:1 --duration-quant=32 --allow-tuplet=4*2/3 --allow-tuplet=2*4/3 foo.
+                                                                                       midi
+B:/ai lab project/rotellini/spartito.ly:1: attenzione: dichiarazione di \version assente; si aggiunga 
+
+\version "2.22.2"
+
+ per compatibilità futura
+errore fatale: errore nei file: "B:\\ai lab project\\rotellini\\spartito.ly"
