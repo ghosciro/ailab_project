@@ -102,11 +102,11 @@ class Coordinates:
             "C-8",
         ]
         self.standard_C4_SHARP = 41
-        self.img = cv2.imread(img)
+        self.img = img
         self.h, self.w = img.shape[:2]
+        self.pts2 = np.float32([[0, 0], [1280, 0], [0, 200], [1280, 200]])
         self.rectangles = self.findRectangles()
         self.perspectiveRectangles = self.findPerspectiveRectangles()
-        self.pts2 = np.float32([[0, 0], [1280, 0], [0, 200], [1280, 200]])
         self.possible = self.findBestRectangle()
         self.coordinates = self.getCoordinates()
 
@@ -184,8 +184,7 @@ class Coordinates:
         possible = None
 
         for i, rect in temp:
-            print("Sto a guarda i rettangoli")
-
+            #print("Sto a guarda i rettangoli")
             gray = cv2.cvtColor(rect[10:190], cv2.COLOR_BGR2GRAY)
             test = self.make_things_better(rect[10:190])
 
@@ -200,16 +199,16 @@ class Coordinates:
 
             df = pd.DataFrame(props)
 
-            df = df[df["area"] > 1200]
+            df = df[df["area"] > 900]
 
             if not possible or len(df) > len(possible[2]):
 
                 possible = (i, np.mean(rect[130:, :]), df)
 
-                # cv2.imshow("label_image_rgb", label_image_rgb)
+                #cv2.imshow("label_image_rgb", label_image_rgb)
                 # cv2.imshow("test", test)
                 # cv2.imshow("img", rect)
-                # cv2.waitKey()
+                #cv2.waitKey()
         return possible
 
     def getCoordinates(self):
@@ -328,7 +327,7 @@ class Coordinates:
 
     def find_middle_C4_SHARP(self, df):
 
-        temp_df = df[df["mean_intensity"] < 20]
+        temp_df = df[df["mean_intensity"] < df["mean_intensity"].max() // 3]
         octaves = []
         remainder = []
         tempone = list(temp_df["label"])

@@ -49,34 +49,6 @@ while succ and key!=ord("k") and not DEBUG:
 cv2.destroyAllWindows()
 
 
-video=cv2.VideoCapture(video_name)
-succ,frame=read(video)
-video_l=[]
-i=0
-
-print("cropping,wait for me")
-
-DISTANCE=10
-MAX_FRAME=300
-
-#prendere MAX_FRAME frame del video ogni DISTANCE frame
-while succ and len(video_l)<MAX_FRAME:
-    if i==DISTANCE:
-            video_l.append(frame[Y:y])
-            i=0
-            print(f"cropping frame n° {len(video_l)}")
-    succ,frame=read(video)
-    i+=1
-
-#trasformo lista in np.array
-video_l=np.array(video_l)
-
-#rimuovo la mano
-dst = video_l[0]
-for i in range(1,len(video_l)):
-        alpha = 1.0/(i)#1/2,1/3,1/4
-        beta = 1.0 - alpha#1/2,2/3,3/4
-        dst = cv2.addWeighted(video_l[i], alpha, dst, beta, 0.0)#somma pesata 
 
 #dst=make_things_better(dst)
 

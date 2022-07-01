@@ -61,6 +61,7 @@ class noterecognito:
         return df
    
     def get_notes(self):
+        k=-1
         x0 = self.notes_database["bbox-1"]
         names = self.notes_database["name"]
         x1 = self.notes_database["bbox-3"]
@@ -78,7 +79,7 @@ class noterecognito:
             #print(i)
             note = []
             for element in df.values:
-                if element[1]+3 < i+height_step and element[3]-3 > i:
+                if element[1]+5 < i+height_step and element[3]-5 > i:
                     if element[4]-element[2] > 30:
                         #print("found double note")
                         doublenotes = test[i:i+height_step, element[2]:element[4]]
@@ -100,9 +101,12 @@ class noterecognito:
                             if media >= x0[y] and media <= x1[y]:
                                 note.append(names[y])
             if note != []:
-                #cv2.imshow("output",test[i+3:i+height_step-3]) 
-                #print(note)
-                #cv2.waitKey(0)
+                if k!=ord("k"):
+                    cv2.imshow("output",test[i+3:i+height_step-3]) 
+                    print(note)
+                    k=cv2.waitKey(0)
+                if k==ord("k"):
+                    cv2.destroyAllWindows()
 
                 notes.append(set(note))
 

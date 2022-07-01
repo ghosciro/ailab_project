@@ -38,8 +38,36 @@ class Vertical_image:
             #cv2.destroyAllWindows()
         return frame[:Y].shape[0]//int(np.mean(speed[1:]))
 
+    def hand_remover(self,MAX_FRAME=50,DISTANCE = 10):
+                
+            video=cv2.VideoCapture(self.video_source)
+            succ,frame=video.read()
+            video_l=[]
+            i=0
 
+            #("cropping,wait for me")
 
+            DISTANCE=10
+            MAX_FRAME=300
+
+            #prendere MAX_FRAME frame del video ogni DISTANCE frame
+            while succ and len(video_l)<MAX_FRAME:
+                if i==DISTANCE:
+                        video_l.append(frame)
+                        i=0
+                succ,frame=video.read()
+                i+=1
+
+            #trasformo lista in np.array
+            video_l=np.array(video_l)
+
+            #rimuovo la mano
+            dst = video_l[0]
+            for i in range(1,len(video_l)):
+                    alpha = 1.0/(i)#1/2,1/3,1/4
+                    beta = 1.0 - alpha#1/2,2/3,3/4
+                    dst = cv2.addWeighted(video_l[i], alpha, dst, beta, 0.0)#somma pesata 
+            return dst
 
     def shiftimage(self,img,x,y):
         M = np.float32([
@@ -117,7 +145,6 @@ class Vertical_image:
         video.set(cv2.CAP_PROP_POS_FRAMES, start)
         succ,frame = video.read()
         v_stack=frame[cut_value:cut_value+frame[:Y,:].shape[0]//n_cut]
-        print(v_stack.shape)
         i=0
         print(f"i'm worker n° {id} i will start at {start} and end at {stop}")
         while succ and start+i<stop:
