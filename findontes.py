@@ -22,33 +22,73 @@ class noterecognito:
         """
 
         firstValue = df["bbox-0"].min()
-        df = df[df["area"]>(df["area"].max()/1.3)]
-        df = [x for x in df["bbox-2"].to_list()[::-1]]
-    
-        lastValue = max(df)
-        bestPick = {bpm: 0 for bpm in range(60, 140)}
+        lastValue = df["bbox-2"].max()
+        df = df[df["area"] > 400]
+
+        df = df["bbox-2"].to_list()
+
+        bestPick = {bpm: 0 for bpm in range(60, 240)}
 
         for bpm in bestPick:
             # A constant that is used to determine the range of values.
-            CONSTANT = (200 - bpm) // 10
-            listOfStartingNotes = [y for x in df for y in range(x - CONSTANT, x + CONSTANT)]
 
-            jump = (lastValue - firstValue) / bpm/16
-            count = firstValue
+            # CONSTANT = (100 - bpm // 2) // 10
 
-            while count < lastValue:
-                if int(count) in listOfStartingNotes:
-                    bestPick[bpm] += 1
-                count += jump
+            # listOfStartingNotes = [y for x in df for y in range(x - CONSTANT, x + CONSTANT)]
+            # setStarting = set(listOfStartingNotes)
+            CONSTANT = 1
+            bps = bpm / 60
+            jump = 25 / bps
 
+            one = set(range(-2, 3))
+            two = set(range(int((jump - CONSTANT)), int((jump + CONSTANT)) + 1)).difference(
+                one
+            )
+            four = set(
+                range(int((jump - CONSTANT) * 4), int((jump + CONSTANT) * 4) + 1)
+            ).difference(two)
+            eight = set(
+                range(int((jump - CONSTANT) * 8), int((jump + CONSTANT) * 8 + 1))
+            ).difference(four)
+            sixteen = set(
+                range(int((jump - CONSTANT) * 16), int((jump + CONSTANT) * 16 + 1))
+            ).difference(eight)
+            threeTwo = set(
+                range(int((jump - CONSTANT) * 32), int((jump + CONSTANT) * 32 + 1))
+            ).difference(sixteen)
+            sixFour = set(
+                range(int((jump - CONSTANT) * 64), int((jump + CONSTANT) * 64 + 1))
+            ).difference(threeTwo)
+            # print(bpm, jump)
+            for i in range(len(df)):
+                for j in range(i, len(df)):
+                    value = df[i] - df[j]
+                    if value > (jump + CONSTANT) * 64:
+                        break
+                    if value in one:
+                        bestPick[bpm] += 1
+                    elif value in two:
+                        bestPick[bpm] += 1
+                    elif value in four:
+                        bestPick[bpm] += 1
+                    elif value in eight:
+                        bestPick[bpm] += 1
+                    elif value in sixteen:
+                        bestPick[bpm] += 1
+                    elif value in threeTwo:
+                        bestPick[bpm] += 1
+                    elif value in sixFour:
+                        bestPick[bpm] += 1
+
+        # print(sorted(bestPick, key=bestPick.get, reverse=True))
+        # print(bestPick)
         # Finding the maximum value in the dictionary and returning the key associated with it.
-        maxForNow = 0
-        solution = None
-        for elem in bestPick:
-            if bestPick[elem] >= maxForNow:
-                maxForNow = bestPick[elem]
-                solution = elem
-        return solution, firstValue, lastValue
+
+        return (
+            max(bestPick, key=bestPick.get),
+            firstValue,
+            lastValue,
+        )
 
 
     def get_rectangles(self,binary_img):
@@ -75,11 +115,13 @@ class noterecognito:
         print(height_step)
         notes = []
         media = 0
-        for i in range(df.values[0][3].min(), 0, -height_step):
+        i=df.values[0][3].min()
+        counter=1
+        while i>0:
             #print(i)
             note = []
             for element in df.values:
-                if element[1]+5 < i+height_step and element[3]-5 > i:
+                if element[1]+6 < i+height_step and element[3]-6 > i:
                     if element[4]-element[2] > 30:
                         #print("found double note")
                         doublenotes = test[i:i+height_step, element[2]:element[4]]
@@ -100,15 +142,21 @@ class noterecognito:
                         for y in range(len(x0)):
                             if media >= x0[y] and media <= x1[y]:
                                 note.append(names[y])
-            if note != []:
-                if k!=ord("k"):
-                    cv2.imshow("output",test[i+3:i+height_step-3]) 
-                    print(note)
-                    k=cv2.waitKey(0)
-                if k==ord("k"):
-                    cv2.destroyAllWindows()
-
-                notes.append(set(note))
-
+            if k!=ord("k"):
+                cv2.imshow("output",test[i:i+height_step]) 
+                print(note)
+                k=cv2.waitKey(0)
+            if k==ord("k"):
+                cv2.destroyAllWindows()
+            notes.append(set(note))
+            '''
+            if counter%4==0 and note == []:
+                df=df[df["bbox-2"]<i]
+                i=df["bbox-2"].max()
+                counter=0
+            else:
+                counter+=1
+                i=i-height_step
+            '''
         return(notes)
 

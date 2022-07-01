@@ -24,10 +24,8 @@ if __name__ == '__main__':
 
     rectangles=Coordinates(nohand).coordinates
     #note recognition
-    print("trovate le note")
     notes=noterecognito(v_stack,rectangles)
     soundednotes=notes.get_notes()
-    print(soundednotes[:150])
     #print(soundednotes)
     #rotellini conversion to sheet
     toMIDI(notes.bpm,soundednotes)

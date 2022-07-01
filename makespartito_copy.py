@@ -25,7 +25,7 @@ def Magic_spartito(perception):    # note con intervalli più lunghi di 8 da fix
         if note_list or repeated:
             for note in repeated.copy():
                 
-                if note not in note_list or c==16:
+                if note not in note_list :
                     result[i-note_interval[note]].append((note, note_interval[note]))  #note interval and additional time for the legature
                     note_interval[note] = 0
                     repeated.remove(note)
@@ -56,7 +56,7 @@ def toMIDI(bpm, perception):
         #time += 0.03125 #for 1/32
     with open("./spartito.mid", "wb") as file:
         midi.writeFile(file)
-    os.system('cmd /k "MidiSheetMusic-2.6.2.exe spartito.mid"')
+    #os.system('cmd /c "MidiSheetMusic-2.6.2.exe spartito.mid"')
     return
 
 
