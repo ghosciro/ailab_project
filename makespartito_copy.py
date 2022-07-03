@@ -56,7 +56,7 @@ def toMIDI(bpm, perception):
         #time += 0.03125 #for 1/32
     with open("./spartito.mid", "wb") as file:
         midi.writeFile(file)
-    #os.system('cmd /c "MidiSheetMusic-2.6.2.exe spartito.mid"')
+    os.system('cmd /c "MidiSheetMusic-2.6.2.exe spartito.mid"')
     return
 
 

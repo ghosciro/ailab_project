@@ -360,5 +360,4 @@ class Coordinates:
 
         return C4_SHARP
 
-    # img = cv2.imread("video1.mp4_snapshot_03.11.846.jpg")
 
