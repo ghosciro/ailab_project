@@ -8,7 +8,8 @@ import skimage.io
 from skimage import measure
 from skimage.color import label2rgb
 
-
+''' the main function of this class is the one  of converting a Vstack into a list of notes, 
+    Input: Vstack, Keys position in a dataframe'''
 class noterecognito:
     def __init__(self, Vsatck, notees_database):
         self.Vsatck = Vsatck
@@ -92,41 +93,46 @@ class noterecognito:
 
 
     def get_rectangles(self,binary_img):
+        ''' this function finds all the rectangles that are presents'''
         label_image = measure.label(binary_img, connectivity=2)
         label_image_rgb = label2rgb(label_image, image=binary_img, bg_label=0)
         props = measure.regionprops_table(label_image,binary_img, properties=["area", "bbox"],)
         df = pd.DataFrame(props)
         df = df[df["area"] > 10].iloc[::-1]
-        skimage.io.imsave("save.jpg", label_image_rgb)
         return df
    
     def get_notes(self):
+        ''' this is the main method of this class used in our program'''
+        '''initialization of some variables'''
         k=-1
-        x0 = self.notes_database["bbox-1"]
+        notes = []
+        media = 0
+        '''reading the positions and the name   from the keyboard dataframe'''
+        x0 = self.notes_database["bbox-1"] 
         names = self.notes_database["name"]
         x1 = self.notes_database["bbox-3"]
+        '''doing operation on our image to feed it in get rectangles '''
         test = cv2.Canny(self.Vsatck, 230, 250)
         df=self.get_rectangles(test)
         df.to_excel("rect.xlsx")
+        '''finding the bmp thanks to the chooseBPM function'''
         bpm, firstValue, lastValue = self.chooseBPM(df)
         self.bpm=bpm
-        print(bpm,firstValue,lastValue)
+        '''evaluating the height of the sliding window'''
         height_step =((lastValue - firstValue) // bpm // 16)
-        print(height_step)
-        notes = []
-        media = 0
         i=df.values[0][3].min()
-        counter=1
+        '''looping the sliding until we reach the top of the image '''
         while i>0:
-            #print(i)
             note = []
+            '''looping for every rectangle found'''
             for element in df.values:
+                '''checking if the rectangle is present in the current slice'''
                 if element[1]+6 < i+height_step and element[3]-6 > i:
+                    '''to solve the problem of two notes toghether, we do check if it's width is higher than one white note'''
                     if element[4]-element[2] > 30:
-                        #print("found double note")
+                        '''cropping the image at the current coordinates'''
                         doublenotes = test[i:i+height_step, element[2]:element[4]]
-                        #cv2.imshow("output",test[i+5:i+height_step-5, element[2]:element[4]]) 
-                        #cv2.waitKey(0) 
+                        '''checking where the rectangles are in the current slice'''
                         if doublenotes[height_step//2-2:height_step//2+2, 0:5].any():
                             media = element[4]+5
                             for y in range(len(x0)):
@@ -138,25 +144,12 @@ class noterecognito:
                                 if media >= x0[y] and media <= x1[y]:
                                     note.append(names[y])
                     else:
+                        '''evaluating the center point of the rectangle found'''
                         media = (element[2]+element[4])//2
+                        '''iterating trough the notes and checking which is the correct note'''
                         for y in range(len(x0)):
                             if media >= x0[y] and media <= x1[y]:
                                 note.append(names[y])
-            if k!=ord("k"):
-                cv2.imshow("output",test[i:i+height_step]) 
-                print(note)
-                k=cv2.waitKey(0)
-            if k==ord("k"):
-                cv2.destroyAllWindows()
             notes.append(set(note))
-            '''
-            if counter%4==0 and note == []:
-                df=df[df["bbox-2"]<i]
-                i=df["bbox-2"].max()
-                counter=0
-            else:
-                counter+=1
-                i=i-height_step
-            '''
         return(notes)
 

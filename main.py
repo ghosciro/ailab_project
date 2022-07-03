@@ -10,22 +10,28 @@ import cv2
 
 
 video_source="video8.mp4"
+video=cv2.VideoCapture(video_source)
 Y=300
 if __name__ == '__main__':
-    ##get V_stack
-    video=cv2.VideoCapture(video_source)
+    '''initializing an instance of Vertical image class'''
     vertical_image=Vertical_image(video_source,10,3)
+    '''finding the image of the keyboard without hands'''
     nohand=vertical_image.hand_remover()
-    N_cut=vertical_image.n_cut
-    best_position=vertical_image.best_position()
-    cut=((best_position)*((video.read()[1][:Y,:].shape[0])//N_cut))
-    v_stack=(vertical_image.dovertical(cut,video_source))
-    ##implement_keyboard recognition
 
-    rectangles=Coordinates(nohand).coordinates
-    #note recognition
-    notes=noterecognito(v_stack,rectangles)
+    '''finding the best position to crop the image'''
+    best_position=vertical_image.best_position()
+    '''creating the Vstack'''
+    cut=((best_position)*((video.read()[1][:Y,:].shape[0])//vertical_image.n_cut))
+    v_stack=(vertical_image.dovertical(cut,video_source))
+
+
+    '''using the function to return a data frame of keys'''
+    keys=Coordinates(nohand).coordinates
+    '''initializing an instance of noterocognito class '''
+    notes=noterecognito(v_stack,keys)
+
+    '''using the get notes function to find all the keys pressed'''
     soundednotes=notes.get_notes()
-    #print(soundednotes)
-    #rotellini conversion to sheet
+
+    '''conversion to sheet'''
     toMIDI(notes.bpm,soundednotes)
